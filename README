@@ -9,3 +9,5 @@ Once you build the app you can sign it with some key (it doesn't really matter w
 jarsigner -verbose -keystore my-release-key.keystore AlwaysDiscoverable/bin/AlwaysDiscoverable.apk mykeyname
 
 I have included a copy which I signed with a dummy key in the repo.
+
+Kill the task to stop it from being discoverable
