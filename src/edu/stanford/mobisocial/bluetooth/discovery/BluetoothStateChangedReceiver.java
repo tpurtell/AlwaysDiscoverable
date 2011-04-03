@@ -1,18 +1,19 @@
 package edu.stanford.mobisocial.bluetooth.discovery;
 
-import edu.stanford.mobisocial.bluetooth.ScanMode;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.widget.Toast;
+import edu.stanford.mobisocial.bluetooth.ScanMode;
 
 public class BluetoothStateChangedReceiver extends BroadcastReceiver {
-
+	private static final BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-		if(adapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE)
-			ScanMode.setScanModeWithUI(context, adapter, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 1000 * 1000 * 100);
+		if(!AlwaysDiscoverable.started)
+			return;
+		if(adapter.isEnabled() && adapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) 
+			ScanMode.setScanModeWithUI(context, adapter, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 120 * 1000);
 	}
-
 }

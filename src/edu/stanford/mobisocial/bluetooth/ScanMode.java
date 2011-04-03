@@ -11,12 +11,13 @@ import android.widget.Toast;
 public class ScanMode {
 	private static final String TAG = "ScanMode";
 
-	public static void setScanModeWithUI(Context context, BluetoothAdapter adapter, int mode, int duration) {
+	public static boolean setScanModeWithUI(Context context, BluetoothAdapter adapter, int mode, int duration) {
 		try {
 			Method m_set_scan_mode = BluetoothAdapter.class.getDeclaredMethod("setScanMode", new Class[] { int.class, int.class });
 			m_set_scan_mode.setAccessible(true);
-			m_set_scan_mode.invoke(adapter, new Object[] { BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 1000 * 1000 * 100 } );
+			m_set_scan_mode.invoke(adapter, new Object[] { mode, duration } );
 			Toast.makeText(context, "Permanent discoverability activated.", Toast.LENGTH_SHORT).show();
+			return true;
 		} catch(NoSuchMethodException e) {
 			Log.e(TAG, "failed to find the scan mode setter method", e);
 			Toast.makeText(context, "Bluetooth framework members not found.", Toast.LENGTH_SHORT).show();
@@ -27,12 +28,14 @@ public class ScanMode {
 			Toast.makeText(context, "Access Denied: AlwaysDiscoverable must installed in the /system/app folder. (Requires rooted device)", Toast.LENGTH_LONG).show();;
 			Log.e(TAG, "scan mode setter invocation failed", e.getCause());
 		}		
+		return false;
 	}
-	public static void setScanMode(BluetoothAdapter adapter, int mode, int duration) {
+	public static boolean setScanMode(BluetoothAdapter adapter, int mode, int duration) {
 		try {
 			Method m_set_scan_mode = BluetoothAdapter.class.getDeclaredMethod("setScanMode", new Class[] { int.class, int.class });
 			m_set_scan_mode.setAccessible(true);
-			m_set_scan_mode.invoke(adapter, new Object[] { BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 1000 * 1000 * 100 } );
+			m_set_scan_mode.invoke(adapter, new Object[] { mode, duration } );
+			return true;
 		} catch(NoSuchMethodException e) {
 			Log.e(TAG, "failed to find the scan mode setter method", e);
 		} catch(IllegalAccessException e) {
@@ -40,5 +43,6 @@ public class ScanMode {
 		} catch(InvocationTargetException e) {
 			Log.e(TAG, "scan mode setter invocation failed", e.getCause());
 		}		
+		return false;
 	}
 }

@@ -1,37 +1,59 @@
 package edu.stanford.mobisocial.bluetooth.discovery;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothAdapter; 
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
+import edu.stanford.mobisocial.bluetooth.ScanMode;
 
 public class AlwaysDiscoverable extends Activity {
     private static final String TAG = "AlwaysDiscoverable";
-
+    public static boolean started = false;
+	private final Timer timer = new Timer();
+	private static final BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+	private class MakeDiscoverableTask extends TimerTask {
+		public void run() {
+			if(adapter.isEnabled()) 
+				ScanMode.setScanMode(adapter, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 120);
+			else
+				Log.w(TAG, "bluetooth is disabled");
+		}
+	}
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-		try {
-			Method m_set_scan_mode = BluetoothAdapter.class.getDeclaredMethod("setScanMode", new Class[] { int.class, int.class });
-			m_set_scan_mode.setAccessible(true);
-			m_set_scan_mode.invoke(adapter, new Object[] { BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 1000 * 1000 * 100 } );
-			Toast.makeText(this, "Permanent discoverability activated.", Toast.LENGTH_SHORT).show();
-		} catch(NoSuchMethodException e) {
-			Log.e(TAG, "failed to find the scan mode setter method", e);
-			Toast.makeText(this, "Bluetooth framework not found.", Toast.LENGTH_LONG).show();;
-		} catch(IllegalAccessException e) {
-			Toast.makeText(this, "Reflection failure.", Toast.LENGTH_LONG).show();;
-			Log.e(TAG, "scan mode setter access violation", e);
-		} catch(InvocationTargetException e) {
-			Toast.makeText(this, "Access Denied: This must installed in the /system/app folder. (Requires rooted device)", Toast.LENGTH_LONG).show();;
-			Log.e(TAG, "scan mode setter invocation failed", e.getCause());
-		}
-		finish();
     }
+    @Override
+    protected void onStart() {
+    	super.onStart();
+        kickOff();
+    }
+    @Override
+    protected void onRestart() {
+    	super.onRestart();
+        kickOff();    	
+    }
+    protected void kickOff() {
+        if(started) {
+        	Toast.makeText(this, "Already discoverable.", Toast.LENGTH_SHORT).show();
+        	finish();
+        	return;
+        }
+        adapter.enable();
+        if(ScanMode.setScanModeWithUI(this, adapter, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 120)) {
+            started = true;
+        	new Thread(new Runnable() {
+				@Override
+				public void run() {
+		        	timer.schedule(new MakeDiscoverableTask(), 90 * 1000, 90 * 1000);
+				}
+			}).start();
+        }
+		finish();
+	}
 }
