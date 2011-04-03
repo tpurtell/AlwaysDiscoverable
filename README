@@ -1,0 +1,9 @@
+Itty-bitty Android root-only app that activates permanent Bluetooth discovery
+
+The basic concept is that you need to call BluetoothAdapter.setScanMode with the correct
+arguments.  It is a private method, so reflection is required.  Furthermore, the permission
+required to call this method is WRITE_SECURE_SETTINGS, so the application MUST be installed
+in /system and it must be signed.
+
+Once you build the app you can sign it with some key (it doesn't really matter what, could be self-signed)
+jarsigner -verbose -keystore my-release-key.keystore AlwaysDiscoverable/bin/AlwaysDiscoverable.apk mykeyname
